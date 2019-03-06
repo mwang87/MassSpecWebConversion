@@ -1,0 +1,44 @@
+
+(% extends "layout.html" %)
+
+(% block content %)
+
+        <div class="container-fluid">
+            <br>
+            <br>
+            <div class="row">
+              <div class="col-sm"></div>
+              <div class="col-sm text-center">
+                  <h2>Conversion Drag and Drop</h2>
+              </div>
+              <div class="col-sm"></div>
+            </div>
+
+            <br>
+            <div class="row">
+              <div class="col-sm"></div>
+              <div class="col-sm">
+                      <p>
+                        Drag and drop mzXML/mzML/ThermoRaw files here to convert files.
+                      </p>
+              </div>
+              <div class="col-sm"></div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="dropzone col-md" id="group1">
+                    <div class="dz-message">Drop files here or click to upload<br>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            group1dropzone = new Dropzone("#group1", { url: "upload1", maxFilesize: 200, parallelUploads:100, timeout: 300000});
+        </script>
+
+
+(% endblock %)
