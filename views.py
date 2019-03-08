@@ -1,5 +1,5 @@
 # views.py
-from flask import abort, jsonify, render_template, request, redirect, url_for, make_response
+from flask import abort, jsonify, render_template, request, redirect, url_for, make_response, send_from_directory
 import uuid
 
 from app import app
@@ -31,5 +31,11 @@ def upload_1():
 def convert():
     sessionid = request.cookies.get('sessionid')
     util.convert_all(sessionid)
-
+    
     return "{}"
+
+"""Custom way to send files back to client"""
+@app.route('/download', methods=['GET'])
+def custom_static():
+    sessionid = request.cookies.get('sessionid')
+    return send_from_directory(os.path.join("/output", sessionid), "converted.tar")

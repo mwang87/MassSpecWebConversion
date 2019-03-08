@@ -50,12 +50,16 @@ def convert_single_file(request):
 
 def save_single_file(request):
     sessionid = request.cookies.get('sessionid')
+    request_file = request.files['file']
 
     filename = ""
 
     save_dir = "/output"
-    #local_filename = os.path.join(save_dir, secure_filename(request.form["fullPath"]))
-    local_filename = os.path.join(save_dir, sessionid, request.form["fullPath"])
+    if "fullPath" in request.form:
+        local_filename = os.path.join(save_dir, sessionid, request.form["fullPath"])
+    else:
+        filename = secure_filename(request_file.filename)
+        local_filename = os.path.join(save_dir, sessionid, filename)
 
     if 'file' not in request.files:
         return "{}"
@@ -67,7 +71,7 @@ def save_single_file(request):
             if exc.errno != errno.EEXIST:
                 raise
 
-    request_file = request.files['file']
+
     request_file.save(local_filename)
 
     print(request_file.filename)
@@ -75,10 +79,22 @@ def save_single_file(request):
 def convert_all(sessionid):
     save_dir = "/output"
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
-    os.mkdir(output_conversion_folder)
     all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "*.d"))
-    print(all_bruker_files)
+    all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "*.raw"))
 
+    print(all_thermo_files)
+
+    """Bruker Conversion"""
     for filename in all_bruker_files:
         cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
         os.system(cmd)
+
+    """Thermo Conversion"""
+    for filename in all_thermo_files:
+        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        os.system(cmd)
+
+    #tar_path = output_conversion_folder = os.path.join(save_dir, sessionid, "converted.tar")
+    cmd = "cd %s && tar -cvf %s %s" % (os.path.join(save_dir, sessionid), "converted.tar", "converted")
+    print(cmd)
+    os.system(cmd)

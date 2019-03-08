@@ -34,7 +34,8 @@
                 </div>
             </div>
 
-            <button onclick="myFunction()">Click me</button>
+            <button onclick="ConvertFiles()">Convert Files</button>
+            <!-- <a href="/convert"><button>Convert Files</button></a> -->
 
         </div>
 
@@ -46,12 +47,14 @@
                 }
             });
 
-            function myFunction(){
+            function ConvertFiles(){
                 $.ajax(
                     {
                         url: "/convert",
                         success: function(result){
-                            alert(result);
+                            let r = Math.random().toString(36).substring(7);
+                            window.location = "/download?" + r
+
                         }
                     }
                 );
