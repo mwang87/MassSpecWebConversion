@@ -83,7 +83,7 @@ def convert_all(sessionid):
     all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "*.raw"))
     all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzXML"))
     all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzML"))
-    
+
 
     print(all_thermo_files)
 
@@ -94,7 +94,7 @@ def convert_all(sessionid):
 
     """Thermo Conversion"""
     for filename in all_thermo_files:
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
         os.system(cmd)
 
     #tar_path = output_conversion_folder = os.path.join(save_dir, sessionid, "converted.tar")
