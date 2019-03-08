@@ -19,7 +19,7 @@
               <div class="col-sm"></div>
               <div class="col-sm">
                       <p>
-                        Drag and drop mzXML/mzML/ThermoRaw files here to convert files.
+                        Drag and drop mzXML/mzML/ThermoRaw files here to upload files to convert.
                       </p>
               </div>
               <div class="col-sm"></div>
@@ -32,12 +32,30 @@
                     <div class="dz-message">Drop files here or click to upload<br>
                     </div>
                 </div>
-                </div>
             </div>
+
+            <button onclick="myFunction()">Click me</button>
+
         </div>
 
         <script>
             group1dropzone = new Dropzone("#group1", { url: "upload1", maxFilesize: 200, parallelUploads:100, timeout: 300000});
+            group1dropzone.on("sending", function(file, xhr, data) {
+                if(file.fullPath){
+                    data.append("fullPath", file.fullPath);
+                }
+            });
+
+            function myFunction(){
+                $.ajax(
+                    {
+                        url: "/convert",
+                        success: function(result){
+                            alert(result);
+                        }
+                    }
+                );
+            }
         </script>
 
 

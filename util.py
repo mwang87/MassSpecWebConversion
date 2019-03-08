@@ -3,7 +3,9 @@ import os
 from app import app
 import json
 import requests
+import errno
 from werkzeug.utils import secure_filename
+import glob
 
 ALLOWED_EXTENSIONS = set(['mgf', 'mzxml', 'mzml', 'csv', 'txt', "raw"])
 
@@ -45,3 +47,38 @@ def convert_single_file(request):
         return local_filename
 
     return None
+
+def save_single_file(request):
+    sessionid = request.cookies.get('sessionid')
+
+    filename = ""
+
+    save_dir = "/output"
+    #local_filename = os.path.join(save_dir, secure_filename(request.form["fullPath"]))
+    local_filename = os.path.join(save_dir, sessionid, request.form["fullPath"])
+
+    if 'file' not in request.files:
+        return "{}"
+
+    if not os.path.exists(os.path.dirname(local_filename)):
+        try:
+            os.makedirs(os.path.dirname(local_filename))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
+    request_file = request.files['file']
+    request_file.save(local_filename)
+
+    print(request_file.filename)
+
+def convert_all(sessionid):
+    save_dir = "/output"
+    output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
+    os.mkdir(output_conversion_folder)
+    all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "*.d"))
+    print(all_bruker_files)
+
+    for filename in all_bruker_files:
+        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        os.system(cmd)
