@@ -81,6 +81,9 @@ def convert_all(sessionid):
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
     all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "*.d"))
     all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "*.raw"))
+    all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzXML"))
+    all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzML"))
+    
 
     print(all_thermo_files)
 
