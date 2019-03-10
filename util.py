@@ -85,21 +85,28 @@ def convert_all(sessionid):
     all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzXML"))
     all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzML"))
 
-    print(all_thermo_files)
-
     """Bruker Conversion"""
     for filename in all_bruker_files:
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        output_filename = os.path.basename(filename).replace(".d", ".mzML")
+        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
         os.system(cmd)
 
     """Thermo Conversion"""
     for filename in all_thermo_files:
-        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        output_filename = os.path.basename(filename).replace(".raw", ".mzML")
+        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
         os.system(cmd)
 
     """Sciex Conversion"""
     for filename in all_sciex_files:
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
+        output_filename = os.path.basename(filename).replace(".wiff", ".mzML")
+        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
+        os.system(cmd)
+
+    """mzXML Conversion"""
+    for filename in all_mzXML_files:
+        output_filename = os.path.basename(filename).replace(".mzXML", ".mzML")
+        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
         os.system(cmd)
 
     all_converted_files = glob.glob(os.path.join(save_dir, sessionid, "converted", "*.mzML"))
