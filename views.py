@@ -30,12 +30,20 @@ def upload_1():
 @app.route('/convert', methods=['GET'])
 def convert():
     sessionid = request.cookies.get('sessionid')
-    util.convert_all(sessionid)
-    
-    return "{}"
+    summary_list = util.convert_all(sessionid)
+
+    return json.dumps(summary_list)
 
 """Custom way to send files back to client"""
 @app.route('/download', methods=['GET'])
 def custom_static():
     sessionid = request.cookies.get('sessionid')
     return send_from_directory(os.path.join("/output", sessionid), "converted.tar")
+
+@app.route('/summary', methods=['GET'])
+def summary_file():
+    sessionid = request.cookies.get('sessionid')
+    filename = request.args.get("filename")
+    target_converted_filepath = os.path.join("/output", sessionid, "converted", filename)
+
+    return target_converted_filepath

@@ -56,10 +56,10 @@ def save_single_file(request):
 
     save_dir = "/output"
     if "fullPath" in request.form:
-        local_filename = os.path.join(save_dir, sessionid, request.form["fullPath"])
+        local_filename = os.path.join(save_dir, sessionid, "input", request.form["fullPath"])
     else:
         filename = secure_filename(request_file.filename)
-        local_filename = os.path.join(save_dir, sessionid, filename)
+        local_filename = os.path.join(save_dir, sessionid, "input", filename)
 
     if 'file' not in request.files:
         return "{}"
@@ -79,11 +79,10 @@ def save_single_file(request):
 def convert_all(sessionid):
     save_dir = "/output"
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
-    all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "*.d"))
-    all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "*.raw"))
-    all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzXML"))
-    all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "*.mzML"))
-
+    all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.d"))
+    all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.raw"))
+    all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzXML"))
+    all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzML"))
 
     print(all_thermo_files)
 
@@ -97,7 +96,17 @@ def convert_all(sessionid):
         cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s' % (filename, output_conversion_folder)
         os.system(cmd)
 
-    #tar_path = output_conversion_folder = os.path.join(save_dir, sessionid, "converted.tar")
+    all_converted_files = glob.glob(os.path.join(save_dir, sessionid, "converted", "*.mzML"))
     cmd = "cd %s && tar -cvf %s %s" % (os.path.join(save_dir, sessionid), "converted.tar", "converted")
-    print(cmd)
+
     os.system(cmd)
+
+    summary_list = []
+    for converted_file in all_converted_files:
+        summary_object = {}
+        summary_object["filename"] = os.path.basename(converted_file)
+        summary_object["summaryurl"] = "/summary?filename=%s" % (os.path.basename(converted_file))
+
+        summary_list.append(summary_object)
+
+    return summary_list

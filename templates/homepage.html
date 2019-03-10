@@ -19,8 +19,16 @@
               <div class="col-sm"></div>
               <div class="col-sm">
                       <p>
-                        Drag and drop mzXML/mzML/ThermoRaw files here to upload files to convert.
+                        Drag and drop mzXML/mzML/vendor files here to upload files to convert.
                       </p>
+              </div>
+              <div class="col-sm"></div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm"></div>
+              <div class="col-sm">
+                  <button onclick="ConvertFiles()" class="btn btn-primary">Convert Uploaded Files</button>
               </div>
               <div class="col-sm"></div>
             </div>
@@ -34,8 +42,25 @@
                 </div>
             </div>
 
-            <button onclick="ConvertFiles()">Convert Files</button>
-            <!-- <a href="/convert"><button>Convert Files</button></a> -->
+            <div id="app-4" class="container-fluid">
+                <br>
+                <h3 class="text-center">Upload Conversion</h3>
+                <br>
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="stat in stats">
+                            <td>{{stat.filename}}</td>
+                            <td>{{stat.summaryurl}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
         </div>
 
@@ -52,13 +77,23 @@
                     {
                         url: "/convert",
                         success: function(result){
+                            app4._data.stats = result
                             let r = Math.random().toString(36).substring(7);
                             window.location = "/download?" + r
-
-                        }
+                        },
+                        dataType: "json"
                     }
                 );
             }
+
+            var app4 = new Vue({
+                el: '#app-4',
+                methods: {
+                },
+                data: {
+                    stats: []
+                }
+            })
         </script>
 
 
