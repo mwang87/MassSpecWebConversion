@@ -67,7 +67,7 @@
         </div>
 
         <script>
-            group1dropzone = new Dropzone("#group1", { url: "upload1", maxFilesize: 200, parallelUploads:100, timeout: 300000});
+            group1dropzone = new Dropzone("#group1", { url: "upload1", maxFilesize: 500, parallelUploads:100, timeout: 300000});
             group1dropzone.on("sending", function(file, xhr, data) {
                 if(file.fullPath){
                     data.append("fullPath", file.fullPath);
