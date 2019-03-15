@@ -79,6 +79,8 @@ def save_single_file(request):
 def convert_all(sessionid):
     save_dir = "/output"
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
+    output_summary_folder = os.path.join(save_dir, sessionid, "summary")
+
     all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.d"))
     all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.raw"))
     all_sciex_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.wiff"))
@@ -89,6 +91,8 @@ def convert_all(sessionid):
     for filename in all_bruker_files:
         output_filename = os.path.basename(filename).replace(".d", ".mzML")
         cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
+        os.system(cmd)
+        cmd = "Rscript mzscript.R %s %s" % (os.path.join(output_conversion_folder, output_filename), os.path.join(output_summary_folder, output_filename + ".html"))
         os.system(cmd)
 
     """Thermo Conversion"""
