@@ -10,6 +10,20 @@ RUN pip install flask
 RUN pip install gunicorn
 RUN pip install requests
 
+RUN apt-get install -y r-base-core
+RUN apt-get install -y libcurl4-openssl-dev
+RUN apt-get install -y libnetcdf-dev
+RUN apt-get install -y libssl-dev
+RUN R -e "install.packages('remotes', repos = 'http://cran.us.r-project.org')"
+RUN R -e "install.packages('data.table', repos = 'http://cran.us.r-project.org')"
+RUN R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"
+RUN apt-get install -y libgomp1
+RUN R -e "install.packages('mzR', repos = 'http://cran.us.r-project.org')"
+RUN R -e "install.packages('shiny', repos = 'http://cran.us.r-project.org')"
+RUN R -e "install.packages('dplyr', repos = 'http://cran.us.r-project.org')"
+RUN R -e "remotes::install_github('chasemc/mzPlotter')"
+RUN apt-get install -y pandoc
+
 #RUN useradd mingxun
 #USER mingxun
 
