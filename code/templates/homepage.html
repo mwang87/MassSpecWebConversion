@@ -75,10 +75,18 @@
             });
 
             function ConvertFiles(){
+                $("#loadMe").modal({
+                  backdrop: "static", //remove ability to close modal with click
+                  keyboard: false, //remove option to close with keyboard
+                  show: true //Display loader!
+                });
+
                 $.ajax(
                     {
                         url: "/convert",
                         success: function(result){
+                            $("#loadMe").modal("hide");
+                            
                             app4._data.stats = result
                             let r = Math.random().toString(36).substring(7);
                             window.location = "/download?" + r
