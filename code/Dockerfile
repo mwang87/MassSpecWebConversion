@@ -37,6 +37,7 @@ RUN R -e "remotes::install_github('chasemc/mzPlotter')"
 #USER mingxun
 
 RUN pip install joblib
+RUN pip install pymzml
 
 COPY . /app
 WORKDIR /app

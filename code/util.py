@@ -56,6 +56,7 @@ def run_parallel_job(input_function, input_parameters_list, parallelism_level):
         for input_param in input_parameters_list:
             result_object = input_function(input_param)
             output_results_list.append(result_object)
+
         return output_results_list
     else:
         results = Parallel(n_jobs = parallelism_level)(delayed(input_function)(input_object) for input_object in input_parameters_list)
@@ -129,6 +130,13 @@ def save_single_file(request):
 
     print(request_file.filename)
 
+def summary_stats(filename):
+    run = pymzml.run.Reader(filename)
+
+    summary = {}
+    summary["spectrum_count"] = run.get_spectrum_count()
+    return summary
+
 def convert_all(sessionid):
     save_dir = "/output"
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
@@ -175,11 +183,7 @@ def convert_all(sessionid):
     """Converting in Parallel"""
     run_parallel_shellcommands(conversion_commands, 10)
 
-    #Tar up the files
     all_converted_files = glob.glob(os.path.join(save_dir, sessionid, "converted", "*.mzML"))
-    cmd = "cd %s && tar -cvf %s %s" % (os.path.join(save_dir, sessionid), "converted.tar", "converted")
-    os.system(cmd)
-
 
     #Create Summary For Files
     for filename in all_converted_files:
@@ -187,14 +191,19 @@ def convert_all(sessionid):
         cmd = "Rscript mzscript.R %s %s" % (filename, html_filename)
         os.system(cmd)
 
-
+    #Tar up the files
+    cmd = "cd %s && tar -cvf %s %s %s" % (os.path.join(save_dir, sessionid), "converted.tar", "converted", "summary")
+    os.system(cmd)
 
 
     summary_list = []
     for converted_file in all_converted_files:
+        #file_detailed_summary = summary_stats(converted_file)
+
         summary_object = {}
         summary_object["filename"] = os.path.basename(converted_file)
         summary_object["summaryurl"] = "/summary?filename=%s" % (os.path.basename(converted_file))
+        #summary_object["spectrum_count"] = file_detailed_summary["spectrum_count"]
 
         summary_list.append(summary_object)
 
