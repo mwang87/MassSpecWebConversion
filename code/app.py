@@ -22,7 +22,7 @@ app = CustomFlask(__name__)
 app.config.from_object(__name__)
 UPLOAD_FOLDER = './tempuploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 256 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024
 
 try:
     os.mkdir(UPLOAD_FOLDER)

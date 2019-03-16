@@ -7,8 +7,61 @@ import errno
 from werkzeug.utils import secure_filename
 import glob
 
-ALLOWED_EXTENSIONS = set(['mgf', 'mzxml', 'mzml', 'csv', 'txt', "raw"])
+from joblib import Parallel, delayed
+import multiprocessing
+import subprocess
+import os
 
+def run_shell_command(script_to_run):
+    try:
+        os.system(script_to_run)
+    except KeyboardInterrupt:
+        raise
+    except:
+        return "FAILURE"
+    return "DONE"
+
+def run_shell_command_timeout(parameter_dict):
+    p = None
+    try:
+        print(parameter_dict["command"])
+        p = subprocess.Popen(parameter_dict["command"])
+        p.wait(parameter_dict["timeout"])
+    except subprocess.TimeoutExpired:
+        p.kill()
+        return "FAILURE"
+    except KeyboardInterrupt:
+        raise
+    except:
+        return "FAILURE"
+    return "DONE"
+
+#Wraps running in parallel a set of shell scripts
+def run_parallel_shellcommands(input_shell_commands, parallelism_level, timeout=None):
+    if timeout != None:
+        parameters_list = []
+        for command in input_shell_commands:
+            parameter_object = {}
+            parameter_object["command"] = command
+            parameter_object["timeout"] = timeout
+            parameters_list.append(parameter_object)
+        return run_parallel_job(run_shell_command_timeout, parameters_list, parallelism_level)
+    else:
+        return run_parallel_job(run_shell_command, input_shell_commands, parallelism_level)
+
+#Wraps the parallel job running, simplifying code
+def run_parallel_job(input_function, input_parameters_list, parallelism_level):
+    if parallelism_level == 1:
+        output_results_list = []
+        for input_param in input_parameters_list:
+            result_object = input_function(input_param)
+            output_results_list.append(result_object)
+        return output_results_list
+    else:
+        results = Parallel(n_jobs = parallelism_level)(delayed(input_function)(input_object) for input_object in input_parameters_list)
+        return results
+
+ALLOWED_EXTENSIONS = set(['mgf', 'mzxml', 'mzml', 'csv', 'txt', "raw"])
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -81,42 +134,61 @@ def convert_all(sessionid):
     output_conversion_folder = os.path.join(save_dir, sessionid, "converted")
     output_summary_folder = os.path.join(save_dir, sessionid, "summary")
 
+    try:
+        os.mkdir(output_summary_folder)
+    except:
+        print("Summary Folder Exists")
+
+
     all_bruker_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.d"))
     all_thermo_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.raw"))
     all_sciex_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.wiff"))
     all_mzXML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzXML"))
     all_mzML_files = glob.glob(os.path.join(save_dir, sessionid, "input", "*.mzML"))
 
+    conversion_commands = []
+
     """Bruker Conversion"""
     for filename in all_bruker_files:
         output_filename = os.path.basename(filename).replace(".d", ".mzML")
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
-        os.system(cmd)
-        cmd = "Rscript mzscript.R %s %s" % (os.path.join(output_conversion_folder, output_filename), os.path.join(output_summary_folder, output_filename + ".html"))
-        os.system(cmd)
+        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
+        conversion_commands.append(cmd)
 
     """Thermo Conversion"""
     for filename in all_thermo_files:
         output_filename = os.path.basename(filename).replace(".raw", ".mzML")
         cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
-        os.system(cmd)
+        conversion_commands.append(cmd)
 
     """Sciex Conversion"""
     for filename in all_sciex_files:
         output_filename = os.path.basename(filename).replace(".wiff", ".mzML")
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
-        os.system(cmd)
+        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
+        conversion_commands.append(cmd)
 
     """mzXML Conversion"""
     for filename in all_mzXML_files:
         output_filename = os.path.basename(filename).replace(".mzXML", ".mzML")
-        cmd = 'wine msconvert %s --32 --zlib --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
-        os.system(cmd)
+        cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
+        conversion_commands.append(cmd)
 
+    """Converting in Parallel"""
+    run_parallel_shellcommands(conversion_commands, 10)
+
+    #Tar up the files
     all_converted_files = glob.glob(os.path.join(save_dir, sessionid, "converted", "*.mzML"))
     cmd = "cd %s && tar -cvf %s %s" % (os.path.join(save_dir, sessionid), "converted.tar", "converted")
-
     os.system(cmd)
+
+
+    #Create Summary For Files
+    for filename in all_converted_files:
+        html_filename = os.path.join(output_summary_folder, os.path.basename(filename) + ".html")
+        cmd = "Rscript mzscript.R %s %s" % (filename, html_filename)
+        os.system(cmd)
+
+
+
 
     summary_list = []
     for converted_file in all_converted_files:

@@ -25,13 +25,18 @@ RUN apt-get install -y pandoc
 RUN R -e "install.packages('remotes', repos = 'http://cran.us.r-project.org', Ncpus=8)"
 RUN R -e "install.packages('data.table', repos = 'http://cran.us.r-project.org', Ncpus=8)"
 RUN R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org', Ncpus=8)"
-RUN R -e "install.packages('mzR', repos = 'http://cran.us.r-project.org', Ncpus=8)"
 RUN R -e "install.packages('shiny', repos = 'http://cran.us.r-project.org', Ncpus=8)"
 RUN R -e "install.packages('dplyr', repos = 'http://cran.us.r-project.org', Ncpus=8)"
+RUN R -e "install.packages('magrittr', repos = 'http://cran.us.r-project.org', Ncpus=8)"
+RUN R -e "install.packages('plotly', repos = 'http://cran.us.r-project.org', Ncpus=8)"
+RUN R -e "install.packages('mzR', repos = 'http://cran.us.r-project.org', Ncpus=8)"
 RUN R -e "remotes::install_github('chasemc/mzPlotter')"
 
-RUN useradd mingxun
-USER mingxun
+#RUN useradd mingxun
+#RUN chown mingxun /wineprefix64 -R
+#USER mingxun
+
+RUN pip install joblib
 
 COPY . /app
 WORKDIR /app

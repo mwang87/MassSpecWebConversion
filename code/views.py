@@ -1,5 +1,5 @@
 # views.py
-from flask import abort, jsonify, render_template, request, redirect, url_for, make_response, send_from_directory
+from flask import abort, jsonify, render_template, request, redirect, url_for, make_response, send_from_directory, send_file
 import uuid
 
 from app import app
@@ -44,6 +44,5 @@ def custom_static():
 def summary_file():
     sessionid = request.cookies.get('sessionid')
     filename = request.args.get("filename")
-    target_converted_filepath = os.path.join("/output", sessionid, "converted", filename)
 
-    return target_converted_filepath
+    return send_from_directory(os.path.join("/output", sessionid, "summary"), filename + ".html")
