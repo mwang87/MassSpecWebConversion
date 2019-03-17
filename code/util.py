@@ -175,13 +175,13 @@ def convert_all(sessionid):
         conversion_commands.append(cmd)
 
     """mzXML Conversion"""
-    for filename in all_mzXML_files:
+    for filename in all_mzXML_files + all_mzML_files:
         output_filename = os.path.basename(filename).replace(".mzXML", ".mzML")
         cmd = 'wine msconvert %s --32 --zlib --ignoreUnknownInstrumentError --filter "peakPicking true 1-" --outdir %s --outfile %s' % (filename, output_conversion_folder, output_filename)
         conversion_commands.append(cmd)
 
     """Converting in Parallel"""
-    run_parallel_shellcommands(conversion_commands, 10)
+    run_parallel_shellcommands(conversion_commands, 32)
 
     all_converted_files = glob.glob(os.path.join(save_dir, sessionid, "converted", "*.mzML"))
 
